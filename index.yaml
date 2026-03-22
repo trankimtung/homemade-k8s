@@ -3,6 +3,24 @@ entries:
   audiobookshelf:
   - apiVersion: v2
     appVersion: 2.33.1
+    created: "2026-03-22T15:18:09.512591257Z"
+    description: A Helm chart for Audiobookshelf - a self-hosted audiobook and podcast
+      server
+    digest: 4eb95ac821196f86a8f4959c5383aca4afae0ea966c8e8299d48f41fce2df4c4
+    icon: https://www.audiobookshelf.org/Logo.png
+    keywords:
+    - audiobookshelf
+    - audiobook
+    - podcast
+    maintainers:
+    - name: trankimtung
+    name: audiobookshelf
+    type: application
+    urls:
+    - https://github.com/trankimtung/homemade-k8s/releases/download/audiobookshelf-0.3.0/audiobookshelf-0.3.0.tgz
+    version: 0.3.0
+  - apiVersion: v2
+    appVersion: 2.33.1
     created: "2026-03-22T15:00:47.535213728Z"
     description: A Helm chart for Audiobookshelf - a self-hosted audiobook and podcast
       server
@@ -37,4 +55,4 @@ entries:
     urls:
     - https://github.com/trankimtung/homemade-k8s/releases/download/navidrome-0.1.0/navidrome-0.1.0.tgz
     version: 0.1.0
-generated: "2026-03-22T15:00:47.665374017Z"
+generated: "2026-03-22T15:18:09.512599723Z"
