@@ -3,7 +3,7 @@ name: audiobookshelf
 description: A Helm chart for Audiobookshelf - a self-hosted audiobook and podcast server
 icon: https://www.audiobookshelf.org/Logo.png
 type: application
-version: 0.2.0
+version: 0.3.0
 appVersion: "2.33.1"
 keywords:
   - audiobookshelf

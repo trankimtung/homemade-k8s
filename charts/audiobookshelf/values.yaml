@@ -33,7 +33,7 @@ extraVolumeMounts: []
 
 service:
   type: ClusterIP
-  port: 80
+  port: 13378
   extraLabels: {}
 
 # UID/GID for the Audiobookshelf process.
