@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "audiobookshelf.fullname" . }}
+  labels:
+    {{- include "audiobookshelf.labels" . | nindent 4 }}
+    {{- with .Values.service.extraLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - name: audiobookshelf
+      port: {{ .Values.service.port }}
+      targetPort: audiobookshelf
+      protocol: TCP
+  selector:
+    {{- include "audiobookshelf.selectorLabels" . | nindent 4 }}

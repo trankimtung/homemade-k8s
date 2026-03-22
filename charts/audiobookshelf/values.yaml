@@ -1,0 +1,76 @@
+nameOverride: ""
+fullnameOverride: ""
+
+image:
+  repository: ghcr.io/advplyr/audiobookshelf
+  tag: "2.33.1"
+  pullPolicy: IfNotPresent
+
+replicas: 1
+
+podLabels: {}
+podAnnotations: {}
+
+# Extra env vars. ref: https://www.audiobookshelf.org/docs#env-configuration
+extraEnv: []
+# - name: MY_VAR
+#   value: "my-value"
+
+# Env vars from existing ConfigMaps or Secrets.
+envFrom: []
+# - secretRef:
+#     name: my-secret
+
+extraVolumes: []
+# - name: audiobooks
+#   nfs:
+#     server: 192.168.1.1
+#     path: /mnt/audiobooks
+
+extraVolumeMounts: []
+# - name: audiobooks
+#   mountPath: /audiobooks
+
+service:
+  type: ClusterIP
+  port: 80
+  extraLabels: {}
+
+# UID/GID for the Audiobookshelf process.
+uid: 1000
+gid: 1000
+
+ingress:
+  enabled: false
+  className: ""
+  extraLabels: {}
+  annotations: {}
+  hosts:
+    - audiobookshelf.example.com
+  path: /
+  pathType: Prefix
+  tls:
+    enabled: false
+    secretName: ""  # Defaults to <fullname>-tls.
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+persistence:
+  config:
+    # Disable to use emptyDir (data lost on pod deletion).
+    enabled: true
+    size: 1Gi
+    accessMode: ReadWriteOnce
+    storageClass: ""  # Leave empty for the cluster default StorageClass.
+  metadata:
+    # Disable to use emptyDir (data lost on pod deletion).
+    enabled: true
+    size: 2Gi
+    accessMode: ReadWriteOnce
+    storageClass: ""  # Leave empty for the cluster default StorageClass.

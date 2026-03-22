@@ -1,0 +1,35 @@
+{{- if .Values.persistence.config.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "audiobookshelf.fullname" . }}-config
+  labels:
+    {{- include "audiobookshelf.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.persistence.config.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.config.size }}
+  {{- if .Values.persistence.config.storageClass }}
+  storageClassName: {{ .Values.persistence.config.storageClass }}
+  {{- end }}
+{{- end }}
+{{- if .Values.persistence.metadata.enabled }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "audiobookshelf.fullname" . }}-metadata
+  labels:
+    {{- include "audiobookshelf.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.persistence.metadata.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.metadata.size }}
+  {{- if .Values.persistence.metadata.storageClass }}
+  storageClassName: {{ .Values.persistence.metadata.storageClass }}
+  {{- end }}
+{{- end }}
