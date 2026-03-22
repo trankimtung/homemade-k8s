@@ -1,0 +1,21 @@
+apiVersion: v1
+entries:
+  navidrome:
+  - apiVersion: v2
+    appVersion: 0.60.3
+    created: "2026-03-22T09:53:28.896257849Z"
+    description: A Helm chart for Navidrome - a self-hosted music server and streamer
+    digest: 397e69ab4a3ddc372c01e20771fafa834a310e85ad4a7ed03d5355bc772dc969
+    icon: https://raw.githubusercontent.com/navidrome/navidrome/400a079fcd54b816b4742c9a7d44eea31fcab0da/resources/logo-192x192.png
+    keywords:
+    - navidrome
+    - music
+    - streaming
+    maintainers:
+    - name: trankimtung
+    name: navidrome
+    type: application
+    urls:
+    - https://github.com/trankimtung/homemade-k8s/releases/download/navidrome-0.1.0/navidrome-0.1.0.tgz
+    version: 0.1.0
+generated: "2026-03-22T09:53:28.896367974Z"
