@@ -1,0 +1,70 @@
+nameOverride: ""
+fullnameOverride: ""
+
+image:
+  repository: deluan/navidrome
+  tag: 0.60.3
+  pullPolicy: IfNotPresent
+
+replicas: 1
+
+podLabels: {}
+podAnnotations: {}
+
+# Extra env vars for Navidrome. ref: https://www.navidrome.org/docs/usage/configuration-options/
+extraEnv: []
+# - name: ND_LOGLEVEL
+#   value: info
+
+# Env vars from existing ConfigMaps or Secrets.
+envFrom: []
+# - secretRef:
+#     name: my-secret
+
+extraVolumes: []
+extraVolumeMounts: []
+
+# UID/GID for the Navidrome process. Must have read access to music and write access to data.
+uid: 1000
+gid: 1000
+
+service:
+  type: ClusterIP
+  port: 4533
+  extraLabels: {}
+
+ingress:
+  enabled: false
+  className: ""
+  extraLabels: {}
+  annotations: {}
+  hosts:
+    - navidrome.example.com
+  path: /
+  pathType: Prefix
+  tls:
+    enabled: false
+    secretName: ""  # Defaults to <fullname>-tls.
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+# Mount a navidrome.toml config file. ref: https://www.navidrome.org/docs/usage/configuration-options/
+config:
+  enabled: false
+  content: ""
+  # MusicFolder = "/music"
+  # LogLevel = "info"
+
+persistence:
+  data:
+    # Disable to use emptyDir (data lost on pod deletion).
+    enabled: true
+    size: 5Gi
+    accessMode: ReadWriteOnce
+    storageClass: ""  # Leave empty for the cluster default StorageClass.
