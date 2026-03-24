@@ -1,0 +1,259 @@
+{{- include "pihole.validate" . }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "pihole.fullname" . }}
+  labels:
+    {{- include "pihole.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "pihole.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "pihole.selectorLabels" . | nindent 8 }}
+    spec:
+      securityContext:
+        fsGroup: {{ .Values.global.gid }}
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: pihole
+          image: "{{ .Values.pihole.image.repository }}:{{ .Values.pihole.image.tag }}"
+          imagePullPolicy: {{ .Values.pihole.image.pullPolicy }}
+          ports:
+            - name: dns-tcp
+              containerPort: {{ .Values.pihole.ftl.dns.port }}
+              protocol: TCP
+            - name: dns-udp
+              containerPort: {{ .Values.pihole.ftl.dns.port }}
+              protocol: UDP
+            - name: http
+              containerPort: {{ .Values.pihole.web.port }}
+              protocol: TCP
+            {{- if .Values.pihole.ftl.ntp.enabled }}
+            - name: ntp-udp
+              containerPort: {{ .Values.pihole.ftl.ntp.port }}
+              protocol: UDP
+            {{- end }}
+          env:
+            - name: PIHOLE_UID
+              value: "{{ .Values.global.uid }}"
+            - name: PIHOLE_GID
+              value: "{{ .Values.global.gid }}"
+            - name: TZ
+              value: {{ .Values.global.timezone | quote }}
+            - name: FTLCONF_webserver_api_password
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.pihole.web.apiPasswordSecret | default (printf "%s-secret" (include "pihole.fullname" .)) }}
+                  key: password
+            {{- if .Values.unbound.enabled }}
+            - name: FTLCONF_dns_upstreams
+              value: "127.0.0.1#{{ .Values.unbound.port }}"
+            {{- else }}
+            - name: FTLCONF_dns_upstreams
+              value: "1.1.1.1"
+            {{- end }}
+            - name: FTLCONF_dns_listeningMode
+              value: "{{ .Values.pihole.ftl.dns.listeningMode }}"
+            - name: FTLCONF_dns_ignoreLocalhost
+              value: "{{ .Values.pihole.ftl.dns.ignoreLocalhost }}"
+            - name: FTLCONF_dns_cache_size
+              value: "{{ .Values.pihole.ftl.dns.cache.size }}"
+            - name: FTLCONF_dns_cache_optimizer
+              value: "{{ .Values.pihole.ftl.dns.cache.optimizer }}"
+            - name: FTLCONF_dns_specialDomains_iCloudPrivateRelay
+              value: "{{ .Values.pihole.ftl.dns.specialDomains.iCloudPrivateRelay }}"
+            - name: FTLCONF_dns_specialDomains_mozillaCanary
+              value: "{{ .Values.pihole.ftl.dns.specialDomains.mozillaCanary }}"
+            - name: FTLCONF_dns_specialDomains_designatedResolver
+              value: "{{ .Values.pihole.ftl.dns.specialDomains.designatedResolver }}"
+            - name: FTLCONF_dns_port
+              value: "{{ .Values.pihole.ftl.dns.port }}"
+            - name: FTLCONF_ntp_sync_active
+              value: "{{ .Values.pihole.ftl.ntp.enabled }}"
+            - name: FTLCONF_ntp_ipv4_active
+              value: "{{ .Values.pihole.ftl.ntp.enabled }}"
+            - name: FTLCONF_ntp_ipv6_active
+              value: "{{ .Values.pihole.ftl.ntp.enabled }}"
+            - name: FTLCONF_dhcp_active
+              value: "{{ .Values.pihole.ftl.dhcp.enabled }}"
+            {{- with .Values.pihole.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with .Values.pihole.envFrom }}
+          envFrom:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/pihole
+            - name: dnsmasq
+              mountPath: /etc/dnsmasq.d
+            {{- with .Values.pihole.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          resources:
+            {{- toYaml .Values.pihole.resources | nindent 12 }}
+          startupProbe:
+            httpGet:
+              path: /admin/
+              port: http
+            failureThreshold: 30
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /admin/
+              port: http
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /admin/
+              port: http
+            periodSeconds: 10
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+              add:
+                - SETFCAP
+                - NET_BIND_SERVICE
+                - CHOWN
+                - DAC_OVERRIDE
+                - FOWNER
+                - SETGID
+                - SETUID
+                - KILL
+                {{- if .Values.pihole.ftl.dhcp.enabled }}
+                - NET_RAW
+                - NET_ADMIN
+                {{- end }}
+                {{- if .Values.pihole.ftl.ntp.enabled }}
+                - SYS_TIME
+                {{- end }}
+
+        {{- if .Values.unbound.enabled }}
+        - name: unbound
+          image: "{{ .Values.unbound.image.repository }}:{{ .Values.unbound.image.tag }}"
+          imagePullPolicy: {{ .Values.unbound.image.pullPolicy }}
+          ports:
+            - name: unbound
+              containerPort: {{ .Values.unbound.port }}
+              protocol: TCP
+            - name: unbound-udp
+              containerPort: {{ .Values.unbound.port }}
+              protocol: UDP
+          env:
+            - name: UNBOUND_PORT
+              value: "{{ .Values.unbound.port }}"
+            {{- with .Values.unbound.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with .Values.unbound.envFrom }}
+          envFrom:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: unbound-var
+              mountPath: /opt/unbound/etc/unbound/var
+            {{- with .Values.unbound.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          resources:
+            {{- toYaml .Values.unbound.resources | nindent 12 }}
+          startupProbe:
+            exec:
+              command:
+                - drill
+                - "@127.0.0.1"
+                - -p
+                - "{{ .Values.unbound.port }}"
+                - cloudflare.com
+            failureThreshold: 30
+            periodSeconds: 5
+          livenessProbe:
+            exec:
+              command:
+                - drill
+                - "@127.0.0.1"
+                - -p
+                - "{{ .Values.unbound.port }}"
+                - cloudflare.com
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - drill
+                - "@127.0.0.1"
+                - -p
+                - "{{ .Values.unbound.port }}"
+                - cloudflare.com
+            periodSeconds: 10
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+              add:
+                - CHOWN
+                - MKNOD
+                - SYS_CHROOT
+                - SETGID
+                - SETUID
+        {{- end }}
+
+        {{- if .Values.nebulaSync.enabled }}
+        - name: nebula-sync
+          image: "{{ .Values.nebulaSync.image.repository }}:{{ .Values.nebulaSync.image.tag }}"
+          imagePullPolicy: {{ .Values.nebulaSync.image.pullPolicy }}
+          env:
+            - name: TZ
+              value: {{ .Values.global.timezone | quote }}
+            - name: PIHOLE_API_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.pihole.web.apiPasswordSecret | default (printf "%s-secret" (include "pihole.fullname" .)) }}
+                  key: password
+            - name: PRIMARY
+              {{- if .Values.nebulaSync.primarySecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.nebulaSync.primarySecret }}
+                  key: primary
+              {{- else }}
+              value: {{ .Values.nebulaSync.primary | quote }}
+              {{- end }}
+            - name: REPLICAS
+              value: "http://localhost:{{ .Values.pihole.web.port }}|$(PIHOLE_API_PASSWORD)"
+            - name: FULL_SYNC
+              value: {{ .Values.nebulaSync.fullSync | quote }}
+            - name: CRON
+              value: {{ .Values.nebulaSync.cron | quote }}
+            - name: RUN_GRAVITY
+              value: {{ .Values.nebulaSync.runGravity | quote }}
+          resources:
+            {{- toYaml .Values.nebulaSync.resources | nindent 12 }}
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: {{ .Values.global.uid }}
+            runAsGroup: {{ .Values.global.gid }}
+            capabilities:
+              drop:
+                - ALL
+        {{- end }}
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: {{ include "pihole.fullname" . }}-config
+        - name: dnsmasq
+          persistentVolumeClaim:
+            claimName: {{ include "pihole.fullname" . }}-dnsmasq
+        - name: unbound-var
+          emptyDir: {}
+        {{- with .Values.extraVolumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}

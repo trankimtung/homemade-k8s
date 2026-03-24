@@ -1,0 +1,40 @@
+{{- if .Values.pihole.web.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "pihole.fullname" . }}
+  labels:
+    {{- include "pihole.labels" . | nindent 4 }}
+    {{- with .Values.pihole.web.ingress.extraLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.pihole.web.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.pihole.web.ingress.className }}
+  ingressClassName: {{ .Values.pihole.web.ingress.className }}
+  {{- end }}
+  {{- if .Values.pihole.web.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        {{- range .Values.pihole.web.ingress.hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      secretName: {{ .Values.pihole.web.ingress.tls.secretName | default (printf "%s-tls" (include "pihole.fullname" .)) }}
+  {{- end }}
+  rules:
+    {{- range .Values.pihole.web.ingress.hosts }}
+    - host: {{ . | quote }}
+      http:
+        paths:
+          - path: {{ $.Values.pihole.web.ingress.path }}
+            pathType: {{ $.Values.pihole.web.ingress.pathType }}
+            backend:
+              service:
+                name: {{ include "pihole.fullname" $ }}-web
+                port:
+                  name: http
+    {{- end }}
+{{- end }}

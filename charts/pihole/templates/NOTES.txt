@@ -1,0 +1,23 @@
+Thank you for installing {{ .Chart.Name }}!
+
+Release Name: {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+
+DNS Service:
+  Type: {{ .Values.pihole.ftl.service.type }}
+  {{- if and (eq .Values.pihole.ftl.service.type "LoadBalancer") .Values.pihole.ftl.service.loadBalancerIP }}
+  IP: {{ .Values.pihole.ftl.service.loadBalancerIP }}
+  {{- else }}
+  Run: kubectl get svc -n {{ .Release.Namespace }} {{ include "pihole.fullname" . }}-ftl
+  {{- end }}
+
+Web Admin:
+{{- if .Values.pihole.web.ingress.enabled }}
+  URL: https://{{ (index .Values.pihole.web.ingress.hosts 0) }}/admin
+{{- else }}
+  Run: kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "pihole.fullname" . }}-web {{ .Values.pihole.web.port }}:{{ .Values.pihole.web.port }}
+  Then visit: http://localhost:{{ .Values.pihole.web.port }}/admin
+{{- end }}
+
+To check the status:
+  kubectl get pods -n {{ .Release.Namespace }} -l app.kubernetes.io/instance={{ .Release.Name }}

@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "pihole.fullname" . }}-config
+  labels:
+    {{- include "pihole.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.pihole.persistence.config.accessMode | default "ReadWriteOnce" }}
+  resources:
+    requests:
+      storage: {{ .Values.pihole.persistence.config.size | default "2Gi" }}
+  {{- if .Values.pihole.persistence.config.storageClass }}
+  storageClassName: {{ .Values.pihole.persistence.config.storageClass }}
+  {{- end }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "pihole.fullname" . }}-dnsmasq
+  labels:
+    {{- include "pihole.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.pihole.persistence.dnsmasq.accessMode | default "ReadWriteOnce" }}
+  resources:
+    requests:
+      storage: {{ .Values.pihole.persistence.dnsmasq.size | default "500Mi" }}
+  {{- if .Values.pihole.persistence.dnsmasq.storageClass }}
+  storageClassName: {{ .Values.pihole.persistence.dnsmasq.storageClass }}
+  {{- end }}

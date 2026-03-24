@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pihole.fullname" . }}-ftl
+  labels:
+    {{- include "pihole.labels" . | nindent 4 }}
+    {{- with .Values.pihole.ftl.service.extraLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.pihole.ftl.service.type }}
+  {{- if and (eq .Values.pihole.ftl.service.type "LoadBalancer") .Values.pihole.ftl.service.loadBalancerIP }}
+  loadBalancerIP: {{ .Values.pihole.ftl.service.loadBalancerIP }}
+  {{- end }}
+  ports:
+    - name: dns-tcp
+      port: {{ .Values.pihole.ftl.dns.port }}
+      targetPort: dns-tcp
+      protocol: TCP
+    - name: dns-udp
+      port: {{ .Values.pihole.ftl.dns.port }}
+      targetPort: dns-udp
+      protocol: UDP
+    {{- if .Values.pihole.ftl.ntp.enabled }}
+    - name: ntp-udp
+      port: {{ .Values.pihole.ftl.ntp.port }}
+      targetPort: ntp-udp
+      protocol: UDP
+    {{- end }}
+  selector:
+    {{- include "pihole.selectorLabels" . | nindent 4 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pihole.fullname" . }}-web
+  labels:
+    {{- include "pihole.labels" . | nindent 4 }}
+    {{- with .Values.pihole.web.service.extraLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.pihole.web.service.type }}
+  ports:
+    - name: http
+      port: {{ .Values.pihole.web.port }}
+      targetPort: http
+      protocol: TCP
+  selector:
+    {{- include "pihole.selectorLabels" . | nindent 4 }}

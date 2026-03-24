@@ -1,0 +1,120 @@
+global:
+  timezone: UTC
+  uid: 1000
+  gid: 1000
+
+pihole:
+  image:
+    repository: pihole/pihole
+    tag: 2026.02.0
+    pullPolicy: IfNotPresent
+
+  ftl:
+    service:
+      type: LoadBalancer
+      loadBalancerIP: ""
+      extraLabels: {}
+    dns:
+      port: 53
+      listeningMode: all
+      ignoreLocalhost: true
+      cache:
+        size: 10000
+        optimizer: 3600
+      specialDomains:
+        iCloudPrivateRelay: true
+        mozillaCanary: true
+        designatedResolver: true
+    dhcp:
+      enabled: false
+    ntp:
+      enabled: false
+      port: 123
+
+  web:
+    port: 80
+    # Set to empty string to disable password authentication
+    apiPassword: "changeme"
+    # Use an existing secret instead; must contain key "password"
+    apiPasswordSecret: ""
+    service:
+      type: ClusterIP
+      extraLabels: {}
+    ingress:
+      enabled: false
+      className: ""
+      extraLabels: {}
+      annotations: {}
+      hosts:
+        - pihole.example.com
+      path: /
+      pathType: Prefix
+      tls:
+        enabled: false
+        secretName: "" # defaults to <fullname>-tls
+
+  resources:
+    limits:
+      cpu: 200m
+      memory: 128Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+  extraEnv: []
+  envFrom: []
+  extraVolumeMounts: []
+
+  persistence:
+    config:
+      size: 512Mi
+      accessMode: ReadWriteOnce
+      storageClass: ""
+    dnsmasq:
+      size: 128Mi
+      accessMode: ReadWriteOnce
+      storageClass: ""
+
+# Unbound recursive DNS resolver
+unbound:
+  enabled: true
+  image:
+    repository: ghcr.io/trankimtung/unbound-container
+    tag: 1.24.2
+    pullPolicy: IfNotPresent
+  port: 5335
+  resources:
+    limits:
+      cpu: 200m
+      memory: 128Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+  extraEnv: []
+  envFrom: []
+  extraVolumeMounts: []
+
+# Nebula-Sync: syncs Pi-hole config from a primary instance to this one
+nebulaSync:
+  enabled: false
+  image:
+    repository: ghcr.io/lovelaze/nebula-sync
+    tag: v0.11.1
+    pullPolicy: IfNotPresent
+  # Format: "http://ph1.example.com|password"
+  primary: ""
+  # Use an existing secret instead; must contain key "primary"
+  primarySecret: ""
+  fullSync: true
+  cron: "0 * * * *"
+  runGravity: false
+  resources:
+    limits:
+      cpu: 50m
+      memory: 64Mi
+    requests:
+      cpu: 10m
+      memory: 32Mi
+
+extraVolumes: []
