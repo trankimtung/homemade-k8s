@@ -1,0 +1,59 @@
+nameOverride: ""
+fullnameOverride: ""
+
+image:
+  repository: ghcr.io/louislam/uptime-kuma
+  tag: 2.2.1-rootless@sha256:63926d0acda9863e50f1fb037953ef01f6a2c4dd0afdc1c0d20bb4d016590b77
+  pullPolicy: IfNotPresent
+
+replicas: 1
+
+podLabels: {}
+podAnnotations: {}
+
+# Extra env vars for Uptime Kuma. ref: https://github.com/louislam/uptime-kuma/wiki/Environment-Variables
+extraEnv: []
+# - name: UPTIME_KUMA_DISABLE_FRAME_SAMEORIGIN
+#   value: "0"
+
+# Env vars from existing ConfigMaps or Secrets.
+envFrom: []
+# - secretRef:
+#     name: my-secret
+
+extraVolumes: []
+extraVolumeMounts: []
+
+service:
+  type: ClusterIP
+  port: 3001
+  extraLabels: {}
+
+ingress:
+  enabled: false
+  className: ""
+  extraLabels: {}
+  annotations: {}
+  hosts:
+    - uptime-kuma.example.com
+  path: /
+  pathType: Prefix
+  tls:
+    enabled: false
+    secretName: ""  # Defaults to <fullname>-tls.
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+persistence:
+  data:
+    # Disable to use emptyDir (data lost on pod deletion).
+    enabled: true
+    size: 256Mi
+    accessMode: ReadWriteOnce
+    storageClass: ""  # Leave empty for the cluster default StorageClass.
