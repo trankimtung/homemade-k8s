@@ -3,7 +3,7 @@ fullnameOverride: ""
 
 image:
   repository: deluan/navidrome
-  tag: 0.60.3
+  tag: 0.61.0@sha256:b14a6acb5cd5ee73f3a13d63d8d68ede82dedb796aa522fbada94769d990cf0b
   pullPolicy: IfNotPresent
 
 replicas: 1
