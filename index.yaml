@@ -3,6 +3,24 @@ entries:
   audiobookshelf:
   - apiVersion: v2
     appVersion: 2.33.1
+    created: "2026-04-03T14:01:43.681401249Z"
+    description: A Helm chart for Audiobookshelf - a self-hosted audiobook and podcast
+      server
+    digest: 6dc1cca687ec5f24546d60a92b0ae5c4038715742c9f5946fed5562b9716c5ee
+    icon: https://www.audiobookshelf.org/Logo.png
+    keywords:
+    - audiobookshelf
+    - audiobook
+    - podcast
+    maintainers:
+    - name: trankimtung
+    name: audiobookshelf
+    type: application
+    urls:
+    - https://github.com/trankimtung/homemade-k8s/releases/download/audiobookshelf-0.3.1/audiobookshelf-0.3.1.tgz
+    version: 0.3.1
+  - apiVersion: v2
+    appVersion: 2.33.1
     created: "2026-03-22T15:18:09.512591257Z"
     description: A Helm chart for Audiobookshelf - a self-hosted audiobook and podcast
       server
@@ -110,4 +128,4 @@ entries:
     urls:
     - https://github.com/trankimtung/homemade-k8s/releases/download/uptime-kuma-0.1.0/uptime-kuma-0.1.0.tgz
     version: 0.1.0
-generated: "2026-04-03T13:51:39.797179336Z"
+generated: "2026-04-03T14:01:43.681418852Z"
