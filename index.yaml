@@ -93,6 +93,25 @@ entries:
   pihole:
   - apiVersion: v2
     appVersion: 2026.02.0
+    created: "2026-04-03T14:43:57.701878317Z"
+    description: A Helm chart for Pi-hole DNS sinkhole and ad blocker, with Unbound
+      and optional NebulaSync support.
+    digest: 317257dce7fd33bab30e37a9048b97b8df88c702536fbfc57ee27368c8217f77
+    keywords:
+    - pihole
+    - unbound
+    - nebulasync
+    - dns
+    - ad-blocker
+    maintainers:
+    - name: trankimtung
+    name: pihole
+    type: application
+    urls:
+    - https://github.com/trankimtung/homemade-k8s/releases/download/pihole-0.1.1/pihole-0.1.1.tgz
+    version: 0.1.1
+  - apiVersion: v2
+    appVersion: 2026.02.0
     created: "2026-03-24T02:16:17.934913335Z"
     description: A Helm chart for Pi-hole DNS sinkhole and ad blocker, with Unbound
       and optional NebulaSync support.
@@ -128,4 +147,4 @@ entries:
     urls:
     - https://github.com/trankimtung/homemade-k8s/releases/download/uptime-kuma-0.1.0/uptime-kuma-0.1.0.tgz
     version: 0.1.0
-generated: "2026-04-03T14:01:43.681418852Z"
+generated: "2026-04-03T14:43:57.701892925Z"
