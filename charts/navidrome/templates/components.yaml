@@ -1,0 +1,2 @@
+{{- include "navidrome.validate" . }}
+{{- include "common.components" (dict "ctx" . "components" .Values.components) }}

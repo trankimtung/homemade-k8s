@@ -1,0 +1,6 @@
+dependencies:
+- name: common
+  repository: https://trankimtung.github.io/homemade-k8s
+  version: 0.1.0
+digest: sha256:c0cf82d3f7a646633d175fc5728231c70356dc3ce66d659197fd05f288386215
+generated: "2026-04-05T21:25:04.344441+08:00"

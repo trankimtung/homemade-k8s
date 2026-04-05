@@ -3,7 +3,7 @@ name: navidrome
 description: A Helm chart for Navidrome - a self-hosted music server and streamer
 icon: https://raw.githubusercontent.com/navidrome/navidrome/400a079fcd54b816b4742c9a7d44eea31fcab0da/resources/logo-192x192.png
 type: application
-version: 0.1.1
+version: 0.2.0
 appVersion: 0.61.0
 keywords:
   - navidrome
@@ -11,3 +11,7 @@ keywords:
   - streaming
 maintainers:
   - name: trankimtung
+dependencies:
+  - name: common
+    version: "0.1.0"
+    repository: "https://trankimtung.github.io/homemade-k8s"

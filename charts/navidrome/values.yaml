@@ -1,70 +1,134 @@
 nameOverride: ""
 fullnameOverride: ""
 
-image:
-  repository: deluan/navidrome
-  tag: 0.61.0@sha256:b14a6acb5cd5ee73f3a13d63d8d68ede82dedb796aa522fbada94769d990cf0b
-  pullPolicy: IfNotPresent
+global:
+  uid: 1000
+  gid: 1000
 
-replicas: 1
+components:
+  navidrome:
+    deployments:
+      navidrome:
+        replicas: 1
+        strategy:
+          type: Recreate
 
-podLabels: {}
-podAnnotations: {}
+        initContainers: []
 
-# Extra env vars for Navidrome. ref: https://www.navidrome.org/docs/usage/configuration-options/
-extraEnv: []
-# - name: ND_LOGLEVEL
-#   value: info
+        extraEnv: {}       # Injected into all containers.
+        envFrom: []        # Injected into all containers.
 
-# Env vars from existing ConfigMaps or Secrets.
-envFrom: []
-# - secretRef:
-#     name: my-secret
+        extraVolumes: []
+        extraVolumeMounts: []  # Mounted into all containers.
 
-extraVolumes: []
-extraVolumeMounts: []
+        containers:
+          navidrome:
+            image: deluan/navidrome:0.61.0@sha256:b14a6acb5cd5ee73f3a13d63d8d68ede82dedb796aa522fbada94769d990cf0b
+            imagePullPolicy: IfNotPresent
+            args:
+              - -c
+              - /config/navidrome.toml
 
-# UID/GID for the Navidrome process. Must have read access to music and write access to data.
-uid: 1000
-gid: 1000
+            ports:
+              navidrome:
+                containerPort: 4533
+                protocol: TCP
 
-service:
-  type: ClusterIP
-  port: 4533
-  extraLabels: {}
+            uid: ""  # Defaults to global.uid.
+            gid: ""  # Defaults to global.gid.
 
-ingress:
-  enabled: false
-  className: ""
-  extraLabels: {}
-  annotations: {}
-  hosts:
-    - navidrome.example.com
-  path: /
-  pathType: Prefix
-  tls:
-    enabled: false
-    secretName: ""  # Defaults to <fullname>-tls.
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
 
-resources:
-  limits:
-    cpu: 500m
-    memory: 512Mi
-  requests:
-    cpu: 100m
-    memory: 128Mi
+            env:
+              ND_DATAFOLDER: /data
+              ND_PORT: "4533"
 
-# Mount a navidrome.toml config file. ref: https://www.navidrome.org/docs/usage/configuration-options/
-config:
-  enabled: false
-  content: ""
-  # MusicFolder = "/music"
-  # LogLevel = "info"
+            extraEnv: {}
+            envFrom: []
 
-persistence:
-  data:
-    # Disable to use emptyDir (data lost on pod deletion).
-    enabled: true
-    size: 5Gi
-    accessMode: ReadWriteOnce
-    storageClass: ""  # Leave empty for the cluster default StorageClass.
+            probes:
+              startup:
+                httpGet:
+                  path: /
+                  port: navidrome
+                failureThreshold: 30
+                periodSeconds: 5
+
+              liveness:
+                httpGet:
+                  path: /
+                  port: navidrome
+                periodSeconds: 10
+
+              readiness:
+                httpGet:
+                  path: /
+                  port: navidrome
+                periodSeconds: 10
+
+            extraVolumeMounts: []
+
+            resources:
+              limits:
+                cpu: 500m
+                memory: 512Mi
+              requests:
+                cpu: 100m
+                memory: 128Mi
+
+    services:
+      navidrome:
+        type: ClusterIP
+        ports:
+          - name: navidrome
+            port: 4533
+        extraLabels: {}
+        annotations: {}
+
+    ingresses:
+      navidrome:
+        enabled: false
+        className: ""
+        portName: navidrome
+        extraLabels: {}
+        annotations:
+          kubernetes.io/tls-acme: "true"
+        hosts:
+          - navidrome.example.com
+        paths:
+          - path: /
+            pathType: Prefix
+        tls:
+          enabled: false
+          secretName: ""  # Defaults to <fullname>-tls.
+
+    # ConfigMaps to create and mount. Each key is the ConfigMap name suffix.
+    cm:
+      config:
+        mountTo:
+          navidrome: /config
+        # Keys are filenames, values are file contents.
+        # Ref: https://www.navidrome.org/docs/usage/configuration-options/
+        data:
+          navidrome.toml: |
+            MusicFolder = "/music"
+            LogLevel = "info"
+
+    persistence:
+      data:
+        enabled: false
+        existingClaim: ""  # Use a pre-existing PVC. Skips PVC creation; enabled is ignored.
+        mountTo:
+          navidrome: /data
+        size: 5Gi
+        accessMode: ReadWriteOnce
+        storageClass: ""
+        extraLabels: {}
+        annotations: {}
