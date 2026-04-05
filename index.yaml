@@ -55,6 +55,18 @@ entries:
     urls:
     - https://github.com/trankimtung/homemade-k8s/releases/download/audiobookshelf-0.2.0/audiobookshelf-0.2.0.tgz
     version: 0.2.0
+  common:
+  - apiVersion: v2
+    created: "2026-04-05T13:11:21.680564949Z"
+    description: Common templates for homemade-k8s Helm charts
+    digest: 4cc25489539a1e366650082b0952cc6fe38703305a3ee1c1fc9b11f553d66438
+    maintainers:
+    - name: trankimtung
+    name: common
+    type: library
+    urls:
+    - https://github.com/trankimtung/homemade-k8s/releases/download/common-0.1.0/common-0.1.0.tgz
+    version: 0.1.0
   navidrome:
   - apiVersion: v2
     appVersion: 0.61.0
@@ -147,4 +159,4 @@ entries:
     urls:
     - https://github.com/trankimtung/homemade-k8s/releases/download/uptime-kuma-0.1.0/uptime-kuma-0.1.0.tgz
     version: 0.1.0
-generated: "2026-04-03T14:43:57.701892925Z"
+generated: "2026-04-05T13:11:21.680592018Z"
