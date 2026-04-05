@@ -70,6 +70,27 @@ entries:
   navidrome:
   - apiVersion: v2
     appVersion: 0.61.0
+    created: "2026-04-05T13:43:53.576600779Z"
+    dependencies:
+    - name: common
+      repository: https://trankimtung.github.io/homemade-k8s
+      version: 0.1.0
+    description: A Helm chart for Navidrome - a self-hosted music server and streamer
+    digest: 999ff64bc82e89c426138e157d4fc2b98ecb385e93f354e60de3d1f1eab18349
+    icon: https://raw.githubusercontent.com/navidrome/navidrome/400a079fcd54b816b4742c9a7d44eea31fcab0da/resources/logo-192x192.png
+    keywords:
+    - navidrome
+    - music
+    - streaming
+    maintainers:
+    - name: trankimtung
+    name: navidrome
+    type: application
+    urls:
+    - https://github.com/trankimtung/homemade-k8s/releases/download/navidrome-0.2.0/navidrome-0.2.0.tgz
+    version: 0.2.0
+  - apiVersion: v2
+    appVersion: 0.61.0
     created: "2026-04-03T13:51:39.797163547Z"
     description: A Helm chart for Navidrome - a self-hosted music server and streamer
     digest: 1f33dabd7b364c0abb1840fde5e888f7dfe91f6b6f5c91990ea34be22587dd35
@@ -159,4 +180,4 @@ entries:
     urls:
     - https://github.com/trankimtung/homemade-k8s/releases/download/uptime-kuma-0.1.0/uptime-kuma-0.1.0.tgz
     version: 0.1.0
-generated: "2026-04-05T13:11:21.680592018Z"
+generated: "2026-04-05T13:43:53.576620837Z"
