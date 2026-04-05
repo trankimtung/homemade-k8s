@@ -1,0 +1,157 @@
+# Example values for charts that consume the common library.
+# Copy relevant sections into your chart's values.yaml and adjust.
+
+nameOverride: ""
+fullnameOverride: ""
+
+global:
+  uid: 1000
+  gid: 1000
+
+# Each top-level key is a component name.
+# Resources names are generated as <fullname>-<component>, e.g. myapp-backend.
+# If a component name matches the chart name, it is considered the "default" component 
+# and the component name is omitted from generated resource names, e.g. myapp.
+components:
+  myapp:
+
+    # ── Deployments ──────────────────────────────────────────────────────────
+    deployments:
+      myapp:
+        replicas: 1
+        strategy:
+          type: Recreate  # Use Recreate when volumes are ReadWriteOnce.
+
+        initContainers: []
+        # - name: init
+        #   image: busybox:latest
+        #   command: ["sh", "-c", "echo init"]
+
+        extraEnv: {}       # Injected into every container in this Deployment.
+        envFrom: []        # Injected into every container in this Deployment.
+        # - secretRef:
+        #     name: my-secret
+
+        extraVolumes: []
+        # - name: tmpdir
+        #   emptyDir: {}
+        extraVolumeMounts: []   # Mounted into every container in this Deployment.
+        # - name: tmpdir
+        #   mountPath: /tmp
+
+        containers:
+          myapp:
+            image: example/myapp:1.0.0@sha256:abc123  # Always pin to a digest.
+            imagePullPolicy: IfNotPresent
+
+            args: []
+            # - --config=/config/app.conf
+
+            # Named ports referenced by probes, Services, and Ingresses.
+            ports:
+              http:
+                containerPort: 8080
+                protocol: TCP
+
+            uid: ""  # Defaults to global.uid.
+            gid: ""  # Defaults to global.gid.
+
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
+
+            env: {}            # Static env vars baked into the chart.
+            extraEnv: {}       # User-supplied env vars for this container.
+            envFrom: []        # User-supplied envFrom for this container.
+
+            probes:
+              startup:
+                httpGet:
+                  path: /healthz
+                  port: http
+                failureThreshold: 30
+                periodSeconds: 5
+              liveness:
+                httpGet:
+                  path: /healthz
+                  port: http
+                periodSeconds: 10
+              readiness:
+                httpGet:
+                  path: /healthz
+                  port: http
+                periodSeconds: 10
+
+            extraVolumeMounts: []
+
+            resources:
+              limits:
+                cpu: 500m
+                memory: 512Mi
+              requests:
+                cpu: 100m
+                memory: 128Mi
+
+    # ── Services ─────────────────────────────────────────────────────────────
+    services:
+      myapp:
+        type: ClusterIP
+        ports:
+          - name: http
+            port: 8080
+            # targetPort defaults to the port name; set explicitly if different.
+            # targetPort: 8080
+            # protocol: TCP
+        extraLabels: {}
+        annotations: {}
+        # loadBalancerIP: ""  # Only used when type is LoadBalancer.
+
+    # ── Ingresses ────────────────────────────────────────────────────────────
+    ingresses:
+      myapp:
+        enabled: false
+        className: ""
+        portName: http  # Service port name to route traffic to.
+        extraLabels: {}
+        annotations: {}
+        # annotations:
+        #   nginx.ingress.kubernetes.io/proxy-body-size: "0"
+        hosts:
+          - myapp.example.com
+        paths:
+          - path: /
+            pathType: Prefix
+            # portName: http    # Override per path; falls back to top-level portName.
+            # serviceName: ""   # Override service; defaults to chart fullname.
+        tls:
+          enabled: false
+          secretName: ""  # Defaults to <ingress-name>-tls.
+
+    # ── ConfigMaps ───────────────────────────────────────────────────────────
+    # Each key is the ConfigMap name suffix. The ConfigMap is mounted at
+    # mountTo inside every container of every Deployment in this component.
+    cm:
+      config:
+        mountTo: /config
+        # Keys are filenames; values are file contents.
+        data: {}
+        # data:
+        #   app.conf: |
+        #     key = value
+
+    # ── PersistentVolumeClaims ───────────────────────────────────────────────
+    persistence:
+      data:
+        enabled: false
+        existingClaim: ""  # Use a pre-existing PVC; skips PVC creation.
+        mountTo: /data
+        size: 5Gi
+        accessMode: ReadWriteOnce
+        storageClass: ""   # Leave empty for the cluster default StorageClass.
+        extraLabels: {}
+        annotations: {}
