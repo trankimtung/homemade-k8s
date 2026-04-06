@@ -1,59 +1,112 @@
 nameOverride: ""
 fullnameOverride: ""
 
-image:
-  repository: ghcr.io/louislam/uptime-kuma
-  tag: 2.2.1-rootless@sha256:63926d0acda9863e50f1fb037953ef01f6a2c4dd0afdc1c0d20bb4d016590b77
-  pullPolicy: IfNotPresent
+global:
+  uid: 1000
+  gid: 1000
 
-replicas: 1
+components:
+  uptime-kuma:
+    deployments:
+      uptime-kuma:
+        replicas: 1
+        strategy:
+          type: Recreate
 
-podLabels: {}
-podAnnotations: {}
+        initContainers: []
 
-# Extra env vars for Uptime Kuma. ref: https://github.com/louislam/uptime-kuma/wiki/Environment-Variables
-extraEnv: []
-# - name: UPTIME_KUMA_DISABLE_FRAME_SAMEORIGIN
-#   value: "0"
+        # Extra env vars injected into all containers. ref: https://github.com/louislam/uptime-kuma/wiki/Environment-Variables
+        extraEnv: {}
+        envFrom: []
 
-# Env vars from existing ConfigMaps or Secrets.
-envFrom: []
-# - secretRef:
-#     name: my-secret
+        extraVolumes: []
+        extraVolumeMounts: []
 
-extraVolumes: []
-extraVolumeMounts: []
+        containers:
+          uptime-kuma:
+            image: ghcr.io/louislam/uptime-kuma:2.2.1-rootless@sha256:63926d0acda9863e50f1fb037953ef01f6a2c4dd0afdc1c0d20bb4d016590b77
+            imagePullPolicy: IfNotPresent
 
-service:
-  type: ClusterIP
-  port: 3001
-  extraLabels: {}
+            ports:
+              uptime-kuma:
+                containerPort: 3001
+                protocol: TCP
 
-ingress:
-  enabled: false
-  className: ""
-  extraLabels: {}
-  annotations: {}
-  hosts:
-    - uptime-kuma.example.com
-  path: /
-  pathType: Prefix
-  tls:
-    enabled: false
-    secretName: ""  # Defaults to <fullname>-tls.
+            uid: ""  # Defaults to global.uid.
+            gid: ""  # Defaults to global.gid.
 
-resources:
-  limits:
-    cpu: 500m
-    memory: 512Mi
-  requests:
-    cpu: 100m
-    memory: 128Mi
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
 
-persistence:
-  data:
-    # Disable to use emptyDir (data lost on pod deletion).
-    enabled: true
-    size: 256Mi
-    accessMode: ReadWriteOnce
-    storageClass: ""  # Leave empty for the cluster default StorageClass.
+            env: {}
+
+            extraEnv: {}
+            envFrom: []
+
+            probes:
+              startup:
+                httpGet:
+                  path: /
+                  port: uptime-kuma
+                failureThreshold: 30
+                periodSeconds: 5
+
+              liveness:
+                httpGet:
+                  path: /
+                  port: uptime-kuma
+                periodSeconds: 10
+
+              readiness:
+                httpGet:
+                  path: /
+                  port: uptime-kuma
+                periodSeconds: 10
+
+            extraVolumeMounts: []
+
+            resources:
+              limits:
+                cpu: 500m
+                memory: 512Mi
+              requests:
+                cpu: 100m
+                memory: 128Mi
+
+    services:
+      uptime-kuma:
+        type: ClusterIP
+        ports:
+          - name: uptime-kuma
+            port: 3001
+
+    ingresses:
+      uptime-kuma:
+        enabled: false
+        className: ""
+        portName: uptime-kuma
+        hosts:
+          - uptime-kuma.example.com
+        paths:
+          - path: /
+            pathType: Prefix
+        tls:
+          enabled: false
+          secretName: ""  # Defaults to <fullname>-tls.
+
+    persistence:
+      data:
+        # Disable to use emptyDir (data lost on pod deletion).
+        enabled: true
+        existingClaim: ""
+        mountTo:
+          uptime-kuma: /app/data
+        size: 256Mi
+        accessMode: ReadWriteOnce
+        storageClass: ""  # Leave empty for the cluster default StorageClass.

@@ -3,7 +3,7 @@ name: uptime-kuma
 description: A Helm chart for Uptime Kuma - a self-hosted monitoring tool
 icon: https://raw.githubusercontent.com/louislam/uptime-kuma/master/public/icon.png
 type: application
-version: 0.1.0
+version: 0.2.0
 appVersion: 2.2.1
 keywords:
   - uptime-kuma
@@ -11,3 +11,7 @@ keywords:
   - uptime
 maintainers:
   - name: trankimtung
+dependencies:
+  - name: common
+    version: "0.1.0"
+    repository: "https://trankimtung.github.io/homemade-k8s"
