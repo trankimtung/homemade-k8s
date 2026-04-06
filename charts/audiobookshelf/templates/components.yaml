@@ -1,0 +1,2 @@
+{{- include "audiobookshelf.validate" . }}
+{{- include "common.components" (dict "ctx" . "components" .Values.components) }}

@@ -1,76 +1,123 @@
 nameOverride: ""
 fullnameOverride: ""
 
-image:
-  repository: ghcr.io/advplyr/audiobookshelf
-  tag: 2.33.1@sha256:a4a5841bba093d81e5f4ad1eaedb4da3fda6dbb2528c552349da50ad1f7ae708
-  pullPolicy: IfNotPresent
+global:
+  uid: 1000
+  gid: 1000
 
-replicas: 1
+components:
+  audiobookshelf:
+    deployments:
+      audiobookshelf:
+        replicas: 1
+        strategy:
+          type: Recreate
 
-podLabels: {}
-podAnnotations: {}
+        initContainers: []
 
-# Extra env vars. ref: https://www.audiobookshelf.org/docs#env-configuration
-extraEnv: []
-# - name: MY_VAR
-#   value: "my-value"
+        # Extra env vars injected into all containers. ref: https://www.audiobookshelf.org/docs#env-configuration
+        extraEnv: {}
+        envFrom: []
 
-# Env vars from existing ConfigMaps or Secrets.
-envFrom: []
-# - secretRef:
-#     name: my-secret
+        extraVolumes: []
+        extraVolumeMounts: []
 
-extraVolumes: []
-# - name: audiobooks
-#   nfs:
-#     server: 192.168.1.1
-#     path: /mnt/audiobooks
+        containers:
+          audiobookshelf:
+            image: ghcr.io/advplyr/audiobookshelf:2.33.1@sha256:a4a5841bba093d81e5f4ad1eaedb4da3fda6dbb2528c552349da50ad1f7ae708
+            imagePullPolicy: IfNotPresent
 
-extraVolumeMounts: []
-# - name: audiobooks
-#   mountPath: /audiobooks
+            ports:
+              audiobookshelf:
+                containerPort: 13378
+                protocol: TCP
 
-service:
-  type: ClusterIP
-  port: 13378
-  extraLabels: {}
+            uid: ""  # Defaults to global.uid.
+            gid: ""  # Defaults to global.gid.
 
-# UID/GID for the Audiobookshelf process.
-uid: 1000
-gid: 1000
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+              readOnlyRootFilesystem: false
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
 
-ingress:
-  enabled: false
-  className: ""
-  extraLabels: {}
-  annotations: {}
-  hosts:
-    - audiobookshelf.example.com
-  path: /
-  pathType: Prefix
-  tls:
-    enabled: false
-    secretName: ""  # Defaults to <fullname>-tls.
+            env:
+              PORT: "13378"
 
-resources:
-  limits:
-    cpu: 500m
-    memory: 512Mi
-  requests:
-    cpu: 100m
-    memory: 128Mi
+            extraEnv: {}
+            envFrom: []
 
-persistence:
-  config:
-    # Disable to use emptyDir (data lost on pod deletion).
-    enabled: true
-    size: 1Gi
-    accessMode: ReadWriteOnce
-    storageClass: ""  # Leave empty for the cluster default StorageClass.
-  metadata:
-    # Disable to use emptyDir (data lost on pod deletion).
-    enabled: true
-    size: 2Gi
-    accessMode: ReadWriteOnce
-    storageClass: ""  # Leave empty for the cluster default StorageClass.
+            probes:
+              startup:
+                httpGet:
+                  path: /
+                  port: audiobookshelf
+                failureThreshold: 30
+                periodSeconds: 5
+
+              liveness:
+                httpGet:
+                  path: /
+                  port: audiobookshelf
+                periodSeconds: 10
+
+              readiness:
+                httpGet:
+                  path: /
+                  port: audiobookshelf
+                periodSeconds: 10
+
+            extraVolumeMounts: []
+
+            resources:
+              limits:
+                cpu: 500m
+                memory: 512Mi
+              requests:
+                cpu: 100m
+                memory: 128Mi
+
+    services:
+      audiobookshelf:
+        type: ClusterIP
+        ports:
+          - name: audiobookshelf
+            port: 13378
+
+    ingresses:
+      audiobookshelf:
+        enabled: false
+        className: ""
+        portName: audiobookshelf
+        hosts:
+          - audiobookshelf.example.com
+        paths:
+          - path: /
+            pathType: Prefix
+        tls:
+          enabled: false
+          secretName: ""  # Defaults to <fullname>-tls.
+
+    persistence:
+      config:
+        # Disable to use emptyDir (data lost on pod deletion).
+        enabled: true
+        existingClaim: ""
+        mountTo:
+          audiobookshelf: /config
+        size: 1Gi
+        accessMode: ReadWriteOnce
+        storageClass: ""  # Leave empty for the cluster default StorageClass.
+      metadata:
+        # Disable to use emptyDir (data lost on pod deletion).
+        enabled: true
+        existingClaim: ""
+        mountTo:
+          audiobookshelf: /metadata
+        size: 2Gi
+        accessMode: ReadWriteOnce
+        storageClass: ""  # Leave empty for the cluster default StorageClass.
